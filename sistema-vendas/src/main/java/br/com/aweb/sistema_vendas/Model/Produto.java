@@ -1,4 +1,6 @@
-package br.com.aweb.sistema_vendas.Entity;
+package br.com.aweb.sistema_vendas.Model;
+
+import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,19 +22,24 @@ import lombok.NoArgsConstructor;
 @Data
 @Table(name = "produtos")
 public class Produto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @NotBlank(message = "Nome é obrigatório.")
     @Column(length = 100, nullable = false)
     private String nome;
+
     @NotBlank(message = "Descrição é obrigatória.")
     @Column(length = 255, nullable = false)
     private String descricao;
+
     @Positive(message = "O preço deve ser maior que zero.")
     @NotNull(message = "O preço é obrigatório.")
     @Column(nullable = false)
-    private Double preco;
+    private BigDecimal preco;
+
     @NotNull(message = "Quantidade é obrigatória.")
     @PositiveOrZero(message = "O estoque deve ser maior ou igual a zero")
     @Column(nullable = false)
