@@ -1,20 +1,7 @@
 package br.com.aweb.sistema_vendas.model;
 
-import java.math.BigDecimal;
-
-import org.hibernate.validator.constraints.br.CPF;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,35 +12,36 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Cliente {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Nome é obrigatório")
+    @NotBlank(message = "Nome completo é obrigatório")
     @Column(nullable = false, length = 100)
-    private String nome;
+    private String nomeCompleto;
 
     @NotBlank(message = "E-mail é obrigatório")
-    @Email(message = "E-mail inválido")
-    @Column(nullable = false, unique = true)
+    @Email(message = "E-mail deve ser válido")
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @NotBlank(message = "CPF é obrigatório")
-    @CPF(message = "CPF inválido")
-    @Size(min = 11, max = 11, message = "CPF deve ter 11 dígitos")
-    @Column(nullable = false, length = 11, unique = true)
+    @Pattern(regexp = "\\d{11}", message = "CPF deve conter 11 dígitos")
+    @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 
-    @NotBlank(message = "Número com DDD é obrigatório")
-    @Column(nullable = false, length = 11)
+    @NotBlank(message = "Telefone é obrigatório")
+    @Column(nullable = false, length = 20)
     private String telefone;
 
     @NotBlank(message = "Logradouro é obrigatório")
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String logradouro;
 
+    @Column(length = 10)
     private String numero;
+
     @Column(length = 50)
     private String complemento;
 
@@ -71,9 +59,7 @@ public class Cliente {
     private String uf;
 
     @NotBlank(message = "CEP é obrigatório")
-    @Size(min = 8, max = 8, message = "CEP precisa ter 8 dígitos")
+    @Pattern(regexp = "\\d{8}", message = "CEP deve conter 8 dígitos")
     @Column(nullable = false, length = 8)
     private String cep;
-
-
 }

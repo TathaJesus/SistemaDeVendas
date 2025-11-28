@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,19 +25,19 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
-    // Listar produtos
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
     public ModelAndView list() {
         return new ModelAndView("produto/list", Map.of("produtos", produtoService.listarTodos()));
     }
 
-    // Formulário de cadastro
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/novo")
     public ModelAndView create() {
         return new ModelAndView("produto/form", Map.of("produto", new Produto()));
     }
 
-    // Salvar produto
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/novo")
     public String create(@Valid Produto produto, BindingResult result) {
         if (result.hasErrors()) {
@@ -46,7 +47,7 @@ public class ProdutoController {
         return "redirect:/produtos";
     }
 
-    // Formulário de edição
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/edit/{id}")
     public ModelAndView edit(@PathVariable Long id) {
         var optionalProduto = produtoService.buscarPorId(id);
@@ -56,7 +57,7 @@ public class ProdutoController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
-    // Atualizar produto
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/edit/{id}")
     public String edit(@Valid Produto produto, BindingResult result) {
         if (result.hasErrors()) {
@@ -64,11 +65,10 @@ public class ProdutoController {
         }
 
         produtoService.atualizar(produto.getId(), produto);
-
         return "redirect:/produtos";
     }
 
-    // Excluir produto
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/delete/{id}")
     public ModelAndView delete(@PathVariable Long id) {
         var optionalProduto = produtoService.buscarPorId(id);
@@ -78,6 +78,7 @@ public class ProdutoController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/delete/{id}")
     public String delete(Produto produto) {
         produtoService.excluir(produto.getId());

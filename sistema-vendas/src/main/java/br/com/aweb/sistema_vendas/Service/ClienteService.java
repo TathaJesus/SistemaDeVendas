@@ -12,58 +12,48 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class ClienteService {
-    
+
     @Autowired
     ClienteRepository clienteRepository;
 
-    // CREATE
     @Transactional
     public Cliente salvar(Cliente cliente) {
-        if(clienteRepository.existsByEmail(cliente.getEmail())) {
-            throw new IllegalArgumentException("E-mail já cadastrado");
+        if (clienteRepository.existsByEmail(cliente.getEmail())) {
+            throw new IllegalArgumentException("Já existe um cliente com este e-mail.");
         }
         if (clienteRepository.existsByCpf(cliente.getCpf())) {
-            throw new IllegalArgumentException("CPF já cadastrado");
+            throw new IllegalArgumentException("Já existe um cliente com este CPF.");
         }
-        Cliente clienteSalvo = clienteRepository.save(cliente);
-        return clienteSalvo;
+        return clienteRepository.save(cliente);
     }
 
-    // READ
     public List<Cliente> listarTodos() {
-        List<Cliente> clientes = clienteRepository.findAll();
-        return clientes;
+        return clienteRepository.findAll();
     }
 
     public Optional<Cliente> buscarPorId(Long id) {
-        Optional<Cliente> optionalCliente = clienteRepository.findById(id);
-        return optionalCliente;
+        return clienteRepository.findById(id);
     }
 
-    // UPDATE
     @Transactional
     public Cliente atualizar(Long id, Cliente clienteAtualizado) {
-        Optional<Cliente> optionalCliente = buscarPorId(id);
+        var optionalCliente = buscarPorId(id);
         if (!optionalCliente.isPresent())
-            throw new IllegalArgumentException("Cliente não encontrado!");
+            throw new IllegalArgumentException("Cliente não encontrado.");
 
-        Cliente clienteExistente = optionalCliente.get();
+        var clienteExistente = optionalCliente.get();
 
-        //valida e-mail se alterado
-        if (!clienteExistente.getEmail().equals(clienteAtualizado.getEmail())) {
-            if (clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
-                throw new IllegalArgumentException("E-mail já cadastrado");
-            }
-        }
-        //valida CPF se alterado
-        if (!clienteExistente.getCpf().equals(clienteAtualizado.getCpf())) {
-            if (clienteRepository.existsByCpf(clienteAtualizado.getCpf())) {
-                throw new IllegalArgumentException("CPF já cadastrado");
-            }
+        if (!clienteExistente.getEmail().equals(clienteAtualizado.getEmail()) && 
+            clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
+            throw new IllegalArgumentException("Já existe um cliente com este e-mail.");
         }
 
-        //Atualiza os campos
-        clienteExistente.setNome(clienteAtualizado.getNome());
+        if (!clienteExistente.getCpf().equals(clienteAtualizado.getCpf()) && 
+            clienteRepository.existsByCpf(clienteAtualizado.getCpf())) {
+            throw new IllegalArgumentException("Já existe um cliente com este CPF.");
+        }
+
+        clienteExistente.setNomeCompleto(clienteAtualizado.getNomeCompleto());
         clienteExistente.setEmail(clienteAtualizado.getEmail());
         clienteExistente.setCpf(clienteAtualizado.getCpf());
         clienteExistente.setTelefone(clienteAtualizado.getTelefone());
@@ -75,16 +65,14 @@ public class ClienteService {
         clienteExistente.setUf(clienteAtualizado.getUf());
         clienteExistente.setCep(clienteAtualizado.getCep());
 
-        Cliente clienteSalvo = clienteRepository.save(clienteExistente);
-        return clienteSalvo;
+        return clienteRepository.save(clienteExistente);
     }
 
-    // DELETE
     @Transactional
     public void excluir(Long id) {
-        Optional<Cliente> optionalCliente = buscarPorId(id);
+        var optionalCliente = buscarPorId(id);
         if (!optionalCliente.isPresent())
-            throw new IllegalArgumentException("Cliente não encontrado!");
+            throw new IllegalArgumentException("Cliente não encontrado.");
 
         clienteRepository.deleteById(id);
     }

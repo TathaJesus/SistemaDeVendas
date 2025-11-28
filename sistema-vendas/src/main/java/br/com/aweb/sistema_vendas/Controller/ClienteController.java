@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,43 +21,41 @@ import jakarta.validation.Valid;
 @Controller
 @RequestMapping("/clientes")
 public class ClienteController {
-    
+
     @Autowired
     private ClienteService clienteService;
 
-    // Listar clientes
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
     public ModelAndView list() {
         return new ModelAndView("cliente/list", Map.of("clientes", clienteService.listarTodos()));
     }
 
-    // Formulário de cadastro
-        @GetMapping("/novo")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @GetMapping("/novo")
     public ModelAndView create() {
         return new ModelAndView("cliente/form", Map.of("cliente", new Cliente()));
     }
 
-    // Salvar cliente
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/novo")
     public String create(@Valid Cliente cliente, BindingResult result) {
         if (result.hasErrors()) {
             return "cliente/form";
         }
+
         try {
             clienteService.salvar(cliente);
-        } catch(IllegalArgumentException e) {
-            if (e.getMessage().contains("CPF")) {
-                result.rejectValue("cpf", "error.cliente", e.getMessage());
-            } else if(e.getMessage().contains("E-mail")) {
-                result.rejectValue("email", "error.cliente", e.getMessage());
-            }
+        } catch (IllegalArgumentException e) {
+            result.rejectValue("email", "error.cliente", e.getMessage());
+            result.rejectValue("cpf", "error.cliente", e.getMessage());
             return "cliente/form";
         }
 
         return "redirect:/clientes";
     }
 
-    // Formulário de edição
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/edit/{id}")
     public ModelAndView edit(@PathVariable Long id) {
         var optionalCliente = clienteService.buscarPorId(id);
@@ -66,26 +65,25 @@ public class ClienteController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
-    // Atualizar cliente
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/edit/{id}")
     public String edit(@Valid Cliente cliente, BindingResult result) {
         if (result.hasErrors()) {
             return "cliente/form";
         }
+
         try {
             clienteService.atualizar(cliente.getId(), cliente);
-        } catch(IllegalArgumentException e) {
-            if (e.getMessage().contains("CPF")) {
-                result.rejectValue("cpf", "error.cliente", e.getMessage());
-            } else if(e.getMessage().contains("E-mail")) {
-                result.rejectValue("email", "error.cliente", e.getMessage());
-            }
+        } catch (IllegalArgumentException e) {
+            result.rejectValue("email", "error.cliente", e.getMessage());
+            result.rejectValue("cpf", "error.cliente", e.getMessage());
             return "cliente/form";
         }
-        return "redirect:/clientes";     
+
+        return "redirect:/clientes";
     }
 
-    // Excluir cliente
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/delete/{id}")
     public ModelAndView delete(@PathVariable Long id) {
         var optionalCliente = clienteService.buscarPorId(id);
@@ -95,10 +93,10 @@ public class ClienteController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/delete/{id}")
     public String delete(Cliente cliente) {
         clienteService.excluir(cliente.getId());
         return "redirect:/clientes";
     }
-
 }
